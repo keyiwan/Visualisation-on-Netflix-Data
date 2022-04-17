@@ -267,8 +267,8 @@ dtf1 <- dtf1 %>%
 
 ## Visualise
 
-Learning from an idea from Josh about using colours from Netflix’s icon
-can make viz more interesting/engaging.
+Replicate an idea from Josh’s about using colours from Netflix’s icon to
+make viz more interesting/engaging.
 
 ``` r
 # showing the colour palette of Netflix symbol
@@ -282,211 +282,213 @@ title(main = "Netflix brand palette", adj = 0, family = "serif")
 
 ![](Netflix-EDA_files/figure-gfm/palette-1.png)<!-- -->
 
+### Movies versus TV shows
+
 ``` r
-## `family` - font type
-# `adj` adjusts location of title, with 0= the far left,1 = far right, 0.5 in the middle as default.
+# tally table
+(fig1 <- dtf1 %>% 
+  count(type) %>% 
+  mutate(freq = n/sum(n)) %>% 
+  mutate(labels1 = str_c(round(freq*100, 0), "%")))
 ```
 
-# R draft below ———————————————
+    ## # A tibble: 2 x 4
+    ##   type        n  freq labels1
+    ##   <chr>   <int> <dbl> <chr>  
+    ## 1 Movie    6126 0.697 70%    
+    ## 2 TV Show  2664 0.303 30%
 
-# viz1 ——————————————————————–
+``` r
+# pie chart for categories
+ggplot(fig1, aes(x = "", y = freq, fill = type)) +
+  geom_col() + 
+  coord_polar(theta = "y") + 
+  scale_fill_manual(values = c("#221f1f", '#b20710')) + 
+  theme_void() +
+  ggtitle(label = "Movie & TV Show distribution", 
+          subtitle = "We see vastly more movies than TV shows on Netflix.")+
+  theme(legend.position = "none", 
+        plot.title = element_text(size = 15, family = 'serif', face = 'bold' ), 
+        plot.subtitle = element_text(size =12 , family = 'serif' )) + 
+  geom_text(aes(label = labels1), 
+            color = "#f5f5f1", 
+            position = position_stack(vjust = 0.5), 
+            size = 4, family = "serif")            
+```
 
-dtf1 %>% ungroup() %>% # no longer grouped by date summarise(numall =
-n())
+![](Netflix-EDA_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
 
-dtf1 %>% ungroup() %>% summarise(Show = mean(type == ‘TV Show’), Movie =
-mean(type == ‘Movie’))
+``` r
+ggplot(fig1, aes(x = "", y = freq, fill = type)) +
+  geom_col() +
+  geom_text(aes(label = labels1),
+            color = "#f5f5f1", 
+            position = position_stack(vjust = 0.5),
+            size = 9, family = "serif") +
+  geom_text(aes(label = type, x = 1.15),
+            color = "#f5f5f1", 
+            position = position_stack(vjust = .38),
+            size = 5, family = "serif") +
+  coord_polar(theta = "y")+
+  scale_fill_manual(values = c("#221f1f", '#b20710'))+
+  theme_void() +
+  ggtitle(label = "Movie & TV Show distribution", 
+          subtitle = "We see vastly more movies than TV shows on Netflix.")+
+  theme(legend.position = "none", 
+        plot.title = element_text(size = 15, family = 'serif', face = 'bold' ),
+        plot.subtitle = element_text(size =12 , family = 'serif' ))
+```
 
-fig1 \<- dtf1 %>% count(type) %>% mutate(freq = n/sum(n)) %>%
-mutate(labels1 = str_c(round(freq\*100, 0), “%”))
+![](Netflix-EDA_files/figure-gfm/unnamed-chunk-1-2.png)<!-- -->
 
-# fig1 \<- dtf1 %>% # ungroup() %>% # summarise(Movie = mean(type ==
-‘Movie’), Show = mean(type == ‘TV Show’)) # # fig1 \<- dtf1 %>% #
-ungroup() %>% # summarise(Show = mean(type == ‘TV Show’), Movie =
-mean(type == ‘Movie’)) labels01 \<-
-as.data.frame(str_c(round(fig1$freq\*100, 0), “%”)) ggplot(fig1, aes(x =
-““, y = freq, fill = type)) + geom_col() + coord_polar(theta =”y”)+
-scale_fill_manual(values = c(“#221f1f”, ‘#b20710’))+ theme_void() +
-ggtitle(label = “perc”, subtitle = “find”)+ theme(legend.position =
-“none”, plot.title = element_text(size = 15, family = ‘serif’, face =
-‘bold’ ), plot.subtitle = element_text(size =12 , family = ‘serif’ )) +
-geom_text(aes(label = labels), color = “#f5f5f1”, position =
-position_stack(vjust = 0.5), size = 4, family = “serif”)  
-th ggplot(fig1, aes(x = ““, y = freq, fill = type)) + geom_col() +
-coord_polar(theta =”y”)+ scale_fill_manual(values = c(“#221f1f”,
-‘#b20710’))
+### Popularity across countries
 
-## create an empty list
-
-listCon \<- list() for (i in 1:nrow(dtf1)){ new_value \<- dtf1\[i,
-“listed_in”\] %>% str_split(“,”) ## using comma to extract country
-listCon \<- append(listCon, new_value) }
-
-head(listCon)
-
-listCon \<- unlist(listCon) ## convert a list to a vector ## using
-str_trim to remove the white space from the start and the end of strings
-### str_trim(” United Kingdom “) ==”United Kingdom” listCon \<-
-lapply(listCon, str_trim) listCon \<- unlist(listCon) ## convert a list
-to a vector
-
-## note that count cannot be used on characters directly
-
-# so we need to create factor first, then use
-
-type_level \<- unique(listCon) ## note factor can add NA as another
-level lc \<- factor(listCon, levels = type_level)
-
-## find the country appeared most
-
-bb \<- summary(na.omit(lc)) head(sort(bb, decreasing = TRUE),10) ##
-Content trend
-
-mode_country \<- names(bb\[bb == max(bb)\])
-
-dtf1 %>% count(type)
-
-ggplot(fig1, aes(x = ““, y = freq, fill = type)) + geom_col() +
-geom_text(aes(label = labels1), color =”#f5f5f1”, position =
-position_stack(vjust = 0.5), size = 9, family = “serif”) +
-geom_text(aes(label = type, x = 1.15), color = “#f5f5f1”, position =
-position_stack(vjust = .38), size = 5, family = “serif”) +
-coord_polar(theta = “y”)+ scale_fill_manual(values = c(“#221f1f”,
-‘#b20710’))+ theme_void() + ggtitle(label = “Movie & TV Show
-distribution”, subtitle = “We see vastly more movies than TV shows on
-Netflix.”)+ theme(legend.position = “none”, plot.title =
-element_text(size = 15, family = ‘serif’, face = ‘bold’ ), plot.subtitle
-= element_text(size =12 , family = ‘serif’ ))
-
-# explore by country ——————————————————
-
-fields \<- c(“Name: Hadley”, “Country: NZ”, “Age: 35”) fields %>%
-str_split(“:”, n = 2, simplify = TRUE) fig2 \<- dtf1 %>% select(type,
-country) %>% mutate(Country1 = sub(“,.\*“,”“, country))
-
-fig2 \<- dtf1 %>% select(type, country) %>% mutate(country =
-str_trim(country)) %>%
-
-fig2 %>% # str_detect returns boolean with pattern matches
-filter(str_detect(country, “^,”)) %>% #check the returned data matches
-mutate(country = str_replace(country, “^,”, ““)) # str_replace removes
-the comma at the start
-
-fig2 \<- fig2 %>%  
-mutate(country = str_replace(country, “^,”, ““)) %>% mutate(country1 =
-sub(”,.\*“,”“, country))
+``` r
+# explore by country ------------------------------------------------------
+# return the first country name on column country
+fig2 <- dtf1 %>% 
+  select(type, country) %>% 
+  mutate(country = str_trim(country)) %>% 
+  mutate(country = str_replace(country, "^, ", "")) %>%
+ # mutate(country1 = sub(",.*$", "", country)) or
+  mutate(country1 = sub(",.*", "", country)) %>% 
+  mutate(across(country1, str_replace, 
+                "United States", "USA")) %>% 
+  mutate(across(country1, str_replace, 
+                "United Kingdom", "UK"))
 
 n_distinct(fig2$country1)
+```
 
-fig2dt \<- fig2 %>% count(country1) %>% arrange(desc(n)) %>% head(10)
+    ## [1] 85
 
-# Factor levels in decreasing order
+``` r
+fig2dt <- fig2 %>% 
+  count(country1) %>% 
+  arrange(desc(n)) %>% 
+  head(10) 
 
-fig2dt![country1 \<- factor(fig2dt](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;country1%20%3C-%20factor%28fig2dt "country1 <- factor(fig2dt")country1,
-levels =
-fig2dt![country1\[order(fig2dt](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;country1%5Border%28fig2dt "country1[order(fig2dt")n,
-decreasing = TRUE)\]) ggplot(data = fig2dt, aes(x = country1, y = n)) +
-geom_bar(mapping = aes( fill = country1), stat = “identity”, width =
-0.6) + geom_text(aes(label = n), vjust = -0.5, size = 3, family =
-‘serif’) + scale_fill_manual(values=c(rep(‘#b20710’, 3),rep(‘#f5f5f1’,
-7)))+ ggtitle(label = “Top 10 countries on Netflix”, subtitle = “The
-three most frequent countries have been highlighted”) +
-theme(legend.position = “none”, panel.grid.major.x = element_blank(),
-panel.grid.minor.x = element_blank(), plot.title = element_text(size =
-15, family = ‘serif’, face = ‘bold’ ), plot.subtitle = element_text(size
-=12 , family = ‘serif’ )) + ylab(NULL) + xlab(NULL) + scale_x\_discrete(
-breaks =
-fig2dt![country1,  labels = c("USA", "India", "UK", as.character(fig2dt](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;country1%2C%20%20labels%20%3D%20c%28%22USA%22%2C%20%22India%22%2C%20%22UK%22%2C%20as.character%28fig2dt "country1,  labels = c("USA", "India", "UK", as.character(fig2dt")country1\[4:10\]))
-) ## remember to convert the factor back to character mutate(Country1 =
-sub(“,.\*“,”“, country))
+# factor levels in decreasing order
+fig2dt$country1 <- factor(fig2dt$country1, 
+                        levels = 
+                        fig2dt$country1[order(fig2dt$n, 
+                                              decreasing = TRUE)])
 
-# fig2_2with stacked barchart ———————————————
+ggplot(data = fig2dt, aes(x = country1, y = n)) +
+  geom_bar(mapping = aes( fill = country1), 
+           stat = "identity", width = 0.6) +
+  geom_text(aes(label = n), vjust = -0.5, 
+            size = 3, family = 'serif') +
+  scale_fill_manual(values=c(rep('#b20710', 3),
+                             rep('#f5f5f1', 7)))+
+  ggtitle(label = "Top 10 countries on Netflix ", 
+          subtitle = "The three most frequent countries have been highlighted") +
+  theme(legend.position = "none", 
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(), 
+        plot.title = element_text(size = 15, 
+                                  family = 'serif', face = 'bold' ),
+        plot.subtitle = element_text(size =12 , 
+                                     family = 'serif' )) +
+  ylab(NULL) + xlab(NULL) 
+```
 
-fig2 %>% filter(country1 %in% fig2dt$country1) %>% group_by(country1)
-%>% count(type) %>% ggplot(aes(x = country1, y = n, fill = type)) +
-geom_bar(position = “fill”, stat = “identity”)
+![](Netflix-EDA_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
-fig2 \<- fig2 %>% mutate(across(country1, str_replace, “United States”,
-“USA”)) %>% mutate(across(country1, str_replace, “United Kingdom”,
-“UK”))
+``` r
+# + scale_x_discrete(breaks = fig2dt$country1, labels = c("USA", "India", "UK", as.character(fig2dt$country1[4:10])))
+```
 
+``` r
+# fig2_2with stacked bar chart ---------------------------------------------
 ## add percent label
+percentData <- fig2 %>% 
+    filter(country1 %in% fig2dt$country1) %>% 
+    group_by(country1) %>% 
+    count(type) %>% 
+    mutate(ratio=scales::percent(n/sum(n), accuracy = 0.1))
 
-percentData \<- fig2 %>% filter(country1 %in%
-fig2dt![country1) %>% #fct_recode(fig2dt](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;country1%29%20%25%3E%25%20%23fct_recode%28fig2dt "country1) %>% #fct_recode(fig2dt")country1,“USA”
-= “United States”, “UK” = “United Kingdom”)) %>% group_by(country1) %>%
-count(type) %>% mutate(ratio=scales::percent(n/sum(n), accuracy = 0.1))
-ggplot(mtcars,aes(x=factor(cyl),fill=factor(gear)))+
-geom_bar(position=“fill”)+
+  factor_country <- percentData %>% 
+    filter(type == "Movie") %>% 
+    arrange(desc(ratio)) %>% 
+# use pull()  other than select() to return a vector format
+    pull(country1)
 
-factor_country \<- percentData %>% filter(type == “Movie”) %>%
-arrange(desc(ratio)) %>% select(country1) ## use pull() to return a
-vector format
+  
+fig2dt2 <-  fig2 %>% 
+      filter(country1 %in% fig2dt$country1) %>% 
+      group_by(country1) %>% 
+      count(type)
+  
+ggplot(data = fig2dt2,
+       aes(x = fct_rev(factor(country1, levels = factor_country)), # to reverse the order of factor, fct_rev
+           y = n,
+           fill = factor(type, levels = c("TV Show", "Movie")))) +
+  geom_bar(position = "fill", stat = "identity") + 
+  scale_fill_manual(values=c('#221f1f','#b20710'), 
+                    labels = c("TV Show", "Movie")) +
+  geom_text(data=percentData, aes(y=n,label=ratio),
+            position=position_fill(vjust=0.5), size = 3, 
+            family = 'serif', color = 'white') +
+  theme_void() +
+  expand_limits(x= c(0, 11)) + # expand categorical axis x by 1, 10 +1
+  ggtitle(label = "Top 10 countries Movie & TV Show split", 
+          subtitle = "Percent Stacked Bar Chart") +
+  annotate("text", x = 10.8, y = 0.82, label = "Movie", size = 4,
+           family = 'serif', fontface="bold", colour="#b20710")+
+  annotate("text", x = 10.8, y = 0.865, label = "|", size = 4,
+           family = 'serif', fontface="bold", colour="black")+ 
+  annotate("text", x = 10.8, y = 0.93, label = "TV Show", size = 4,
+           family = 'serif', fontface="bold", colour="#221f1f")+  
+  theme(legend.position = "none", 
+        axis.text.y= element_text(family = 'serif', 
+                             size = 10, hjust = 1,colour = 'black'),
+        plot.title = element_text(size = 15, family = 'serif', face = 'bold' ),
+        plot.subtitle = element_text(size =12 , family = 'serif', vjust = 1 )) + 
+  coord_flip()  
+```
 
-factor_country \<- percentData %>% filter(type == “Movie”) %>%
-arrange(desc(ratio)) %>% pull(country1)
+![](Netflix-EDA_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
-fig2dt2 \<- fig2 %>% filter(country1 %in% fig2dt$country1) %>%
-group_by(country1) %>% count(type)
+### Growth over time
 
-ggplot(data = fig2dt2, aes(x = factor(country1, levels =
-factor_country), y = n, fill = factor(type, levels = c(“TV Show”,
-“Movie”)))) + geom_bar(position = “fill”, stat = “identity”) +
-scale_fill_manual(values=c(‘#221f1f’,‘#b20710’), labels = c(“TV Show”,
-“Movie”)) + geom_text(data=percentData, aes(y=n,label=ratio),
-position=position_fill(vjust=0.5), size = 3, family = ‘serif’, color =
-‘white’) + theme(legend.position = “none”) + coord_flip() ## to reverse
-the order of factor, fct_rev ## no!factor_country \<-
-fct_recode(factor_country, # “USA” = “United States”, “UK” = “United
-Kingdom”) # fig2dt2 \<- fig2dt2 %>% # mutate(country1 = factor(country1,
-levels = factor_country)) %>% ## mutate(country1 =
-fct_recode(country1,  
-# “USA” = “United States”, “UK” = “United Kingdom”))
+``` r
+fig3dt <- dtf1 %>% 
+  count(year_added, type) %>% 
+  rename(Year = year_added, added = n)
 
-ggplot(data = fig2dt2, aes(x = fct_rev(factor(country1, levels =
-factor_country)), y = n, fill = factor(type, levels = c(“TV Show”,
-“Movie”)))) + geom_bar(position = “fill”, stat = “identity”) +
-scale_fill_manual(values=c(‘#221f1f’,‘#b20710’), labels = c(“TV Show”,
-“Movie”)) + geom_text(data=percentData, aes(y=n,label=ratio),
-position=position_fill(vjust=0.5), size = 3, family = ‘serif’, color =
-‘white’) + theme_void() + expand_limits(x= c(0, 11)) + # expand
-categorical axis x by 1, 10 +1 ggtitle(label = “Top 10 countries Movie &
-TV Show split”, subtitle = “Percent Stacked Bar Chart”) +
-annotate(“text”, x = 10.8, y = 0.82, label = “Movie”, size = 4, family =
-‘serif’, fontface=“bold”, colour=“#b20710”)+ annotate(“text”, x = 10.8,
-y = 0.865, label = “\|”, size = 4, family = ‘serif’, fontface=“bold”,
-colour=“black”)+ annotate(“text”, x = 10.8, y = 0.93, label = “TV Show”,
-size = 4, family = ‘serif’, fontface=“bold”, colour=“#221f1f”)+  
-theme(legend.position = “none”, axis.text.y= element_text(family =
-‘serif’, size = 10, hjust = 1,colour = ‘black’), plot.title =
-element_text(size = 15, family = ‘serif’, face = ‘bold’ ), plot.subtitle
-= element_text(size =12 , family = ‘serif’, vjust = 1 )) + #
-annotate(“text”, x = 10.5, y = 0.9, label = “Movie”, size = 3, # family
-= ‘serif’, fontface=“bold”, colour=“#b20710”) + coord_flip()  
-scales::percent(0.236, accuracy = 0.1) ## show 23.6% label
+fig3dt %>% 
+  ggplot(aes(x = Year, y = added, 
+                          fill = type)) +
+  scale_x_continuous(breaks = seq(min(fig3dt$Year), 
+                                  max(fig3dt$Year), 1)) +
+  scale_y_continuous(breaks = seq(0, 2000, 400)) +
+  scale_fill_manual(values=c('#b20710', '#221f1f')) +
+                    # labels = c("Movie", "TV Show")) +
+  geom_area() +
+  ggtitle(label = "  Movies & TV Shows added over time") +
+  annotate("text", x = 2008, y = 1500 , label = "We see a slow start for Netflix over several years. 
+Things begin to pick up in 2015 and then there is a 
+rapid increase from 2016.
+It looks like content additions have slowed down in 2020, 
+likely due to the COVID-19 pandemic.
+", family = 'serif', size = 4, colour = "black", hjust=0) +
+  theme_void() +
+  theme(legend.position = "none", 
+        axis.text.y= element_text(family = 'serif', 
+                                  size = 10, hjust = 0,colour = 'black'),
+        axis.text.x= element_text(family = 'serif', 
+                                  size = 10, colour = 'black', vjust = 2),
+        plot.title = element_text(size = 15, family = 'serif', face = 'bold' ),
+        ) +
+  scale_y_continuous(position = "right") +
+  ylab(NULL) 
+```
 
-fig3dt \<- dtf1 %>% count(year_added, type) %>% rename(Year =
-year_added, added = n)
+![](Netflix-EDA_files/figure-gfm/line_graph-1.png)<!-- -->
 
-fig3dt %>% ggplot(aes(x = Year, y = added, fill = type)) +
-scale_x\_continuous(breaks =
-seq(min(fig3dt![Year),  max(fig3dt](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;Year%29%2C%20%20max%28fig3dt "Year),  max(fig3dt")Year),
-1)) + scale_y\_continuous(breaks = seq(0, 2000, 400)) +
-scale_fill_manual(values=c(‘#b20710’, ‘#221f1f’)) + # labels =
-c(“Movie”, “TV Show”)) + geom_area() + ggtitle(label = ” Movies & TV
-Shows added over time”) + annotate(“text”, x = 2008, y = 1500 , label =
-“We see a slow start for Netflix over several years. Things begin to
-pick up in 2015 and then there is a rapid increase from 2016. It looks
-like content additions have slowed down in 2020, likely due to the
-COVID-19 pandemic.”, family = ‘serif’, size = 4, colour = “black”,
-hjust=0) + theme_void() + theme(legend.position = “none”, axis.text.y=
-element_text(family = ‘serif’, size = 10, hjust = 0,colour = ‘black’),
-axis.text.x= element_text(family = ‘serif’, size = 10, colour = ‘black’,
-vjust = 2), plot.title = element_text(size = 15, family = ‘serif’, face
-= ‘bold’ ), ) + scale_y\_continuous(position = “right”) + ylab(NULL)
+### TBC
 
-## What to consider next: how to shorten the distance between
-
-## the plot area and the y-axis ticks or how to add a vertical line
-
-## exactly on the edge of the graph.
+-   What to consider next: how to shorten the distance between the plot
+    area and the y-axis ticks or  
+-   how to add a vertical line exactly on the edge of the graph.
